@@ -54,3 +54,4 @@ $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 $route['user'] = 'User/user';
 $route['customer'] = 'Customer/customer';
+$route['user/(:any)'] = 'User/user/$1';

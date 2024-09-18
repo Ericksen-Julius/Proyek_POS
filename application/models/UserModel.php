@@ -18,6 +18,17 @@ class userModel extends CI_Model
             '%' . $keyword . '%',
             '%' . $keyword . '%'
         ]);
-        return $data->result_array();
+        $users = $data->result_array();
+        if (!empty($users)) {
+            echo json_encode([
+                'success' => true,
+                'data' => $users
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'No users found'
+            ]);
+        }
     }
 }
