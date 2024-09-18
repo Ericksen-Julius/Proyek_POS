@@ -14,7 +14,7 @@ class User extends CI_Controller
 		$users = $this->userModel->getUser($keyword); // Assuming getAllUsers is defined in the model
 		var_dump($users);
 	}
-	public function user()
+	public function user($parameter = null)
 	{
 		if ($this->input->method() == 'get') {
 			$this->getUser();
@@ -22,55 +22,132 @@ class User extends CI_Controller
 			$json = file_get_contents('php://input');
 			$result = $this->inputUser($json);
 			return $result;
+		} else if ($this->input->method() == 'put') {
+			$json = file_get_contents('php://input');
+			$result = $this->updateUser($parameter, $json);
+			return $result;
+		} else if ($this->input->method() == 'delete') {
+			$result = $this->deleteUser($parameter);
+			return $result;
+		} else {
+			show_404();
+			return;
 		}
 	}
 	public function inputUser($json)
 	{
+		try {
+			$data = json_decode($json, true);
 
-		// Decode JSON menjadi array associative
-		$data = json_decode($json, true);
+			$_POST = $data;
 
-		// Set data ke $_POST
-		$_POST = $data;
+			$this->load->library('form_validation');
 
-		// Validasi data
-		$this->load->library('form_validation');
+			// Set validation rules
+			$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
+			$this->form_validation->set_rules('password', 'Password', 'required');
+			$this->form_validation->set_rules('jabatan', 'Jabatan', 'required|max_length[30]');
 
-		$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
-		$this->form_validation->set_rules('password', 'Password', 'required|min_length[6]');
-		$this->form_validation->set_rules('jabatan', 'Jabatan', 'required|max_length[30]');
+			// Validate the input data
+			if ($this->form_validation->run() == FALSE) {
+				// If validation fails, return errors
+				$errors = $this->form_validation->error_array();
+				echo json_encode([
+					'success' => false,
+					'message' => 'Error validation',
+					'errors' => $errors
+				]);
+				return;
+			}
 
+			// Encrypt the password using password_hash()
+			$hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
 
-		if ($this->form_validation->run() == FALSE) {
-			// Jika validasi gagal
-			$errors = $this->form_validation->error_array();
+			// Insert the data into the database
+			$sql = 'INSERT INTO MK_MASTER_USER (NAMA, PASSWORD, JABATAN) VALUES (?, ?, ?)';
+			$inserted = $this->db->query($sql, [
+				$data['nama'],
+				$hashedPassword,
+				$data['jabatan']
+			]);
+
+			if ($inserted) {
+				echo json_encode([
+					'success' => true
+				]);
+			} else {
+				throw new Exception('Insert operation failed.');
+			}
+		} catch (Exception $e) {
 			echo json_encode([
 				'success' => false,
-				'message' => 'Error validation',
-				'errors' => $errors
+				'message' => $e->getMessage()
 			]);
-			return;
 		}
+	}
+	public function deleteUser($id)
+	{
+		try {
+			$sql = 'DELETE FROM MK_MASTER_USER WHERE USER_ID = ?';
+			$this->db->query($sql, [$id]);
 
-		// Encrypt the password using password_hash()
-		$hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
-
-		// Jika validasi berhasil, masukkan data ke database
-		$sql = 'INSERT INTO MK_MASTER_CUSTOMER (Nama,Password,Jabatan) VALUES (?, ?, ?)';
-		$inserted = $this->db->query($sql, [
-			$data['nama'],
-			$hashedPassword,
-			$data['jabatan']
-		]);
-
-		if ($inserted) {
-			echo json_encode([
-				'success' => true
-			]);
-		} else {
+			if ($this->db->affected_rows() > 0) {
+				echo json_encode(['success' => true]);
+			} else {
+				throw new Exception('No user found with the given ID.');
+			}
+		} catch (Exception $e) {
 			echo json_encode([
 				'success' => false,
-				'message' => 'Maaf ada kesalahan, mohon tunggu sebentar'
+				'message' => $e->getMessage()
+			]);
+		}
+	}
+	public function updateUser($id, $json)
+	{
+		try {
+			$data = json_decode($json, true);
+
+			// Validasi data
+			$this->load->library('form_validation');
+
+			$this->form_validation->set_data($data);  // Set data for validation
+
+			$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
+			$this->form_validation->set_rules('password', 'Password', 'required');
+			$this->form_validation->set_rules('jabatan', 'Jabatan', 'required|max_length[30]');
+
+			if ($this->form_validation->run() == FALSE) {
+				// Jika validasi gagal
+				$errors = $this->form_validation->error_array();
+				echo json_encode([
+					'success' => false,
+					'message' => 'Error validation',
+					'errors' => $errors
+				]);
+				return;
+			}
+
+			$hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
+
+			// Jika validasi berhasil, masukkan data ke database
+			$sql = 'UPDATE MK_MASTER_USER SET NAMA = ?, PASSWORD = ?, JABATAN = ? WHERE USER_ID = ?';
+			$updated = $this->db->query($sql, [
+				$data['nama'],
+				$hashedPassword,
+				$data['jabatan'],
+				(int)$id
+			]);
+
+			if ($this->db->affected_rows() > 0) {
+				echo json_encode(['success' => true]);
+			} else {
+				throw new Exception('No user found with the given ID.');
+			}
+		} catch (Exception $e) {
+			echo json_encode([
+				'success' => false,
+				'message' => $e->getMessage()
 			]);
 		}
 	}

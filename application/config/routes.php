@@ -53,3 +53,4 @@ $route['default_controller'] = '';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 $route['user'] = 'User/user';
+$route['user/(:any)'] = 'User/user/$1';
