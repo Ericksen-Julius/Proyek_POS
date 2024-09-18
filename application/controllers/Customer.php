@@ -1,77 +1,130 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class customer extends CI_Controller {
+class Customer extends CI_Controller {
 
-    public function __construct() {
-        parent::__construct();
-        $this->load->model('CustomerModel');
+    public function __construct()
+	{
+		parent::__construct();
+		$this->load->model('customerModel');
+	}
+	public function getCustomer($keyword = false)
+	{
+		$users = $this->customerModel->getCustomer($keyword); // Assuming getAllUsers is defined in the model
+		var_dump($users);
+	}
+	public function customer()
+	{
+		if ($this->input->method() == 'get') {
+			$this->getCustomer();
+		} else if ($this->input->method() == 'post') {
+			$json = file_get_contents('php://input');
+			$result = $this->inputCustomer($json);
+			return $result;
+		} else if ($this->input->method() == 'put'){
+            $json = file_get_contents('php://input');
+            $result = $this->editCustomer($json);
+            return $result;
+        } else if ($this->input->method() == 'delete'){
+            // $
+        }
+	}
+
+    public function editCustomer($json)
+    {
+        // Decode JSON menjadi array associative
+        $data = json_decode($json, true);
+
+        // Validasi data
+        $this->load->library('form_validation');
+
+        $this->form_validation->set_data($data);
+
+        $this->form_validation->set_rules('no_hp', 'No_hp', 'required|max_length[11]');
+        $this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
+        $this->form_validation->set_rules('alamat', 'Alamat', 'required|max_length[100]');
+        $this->form_validation->set_rules('kota', 'Kota', 'required|max_length[50]');
+
+        if ($this->form_validation->run() == FALSE) {
+            // Jika validasi gagal
+            $errors = $this->form_validation->error_array();
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error validation',
+                'errors' => $errors
+            ]);
+            return;
+        }
+
+        // Jika validasi berhasil, update data ke database
+        $sql = 'UPDATE MK_MASTER_CUSTOMER SET Nama = ?, Alamat = ?, Kota = ? WHERE No_hp = ?';
+        $updated = $this->db->query($sql, [
+            $data['nama'],
+            $data['alamat'],
+            $data['kota'],
+            $data['no_hp']
+        ]);
+
+        if ($updated) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Customer updated successfully'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Maaf ada kesalahan, mohon tunggu sebentar'
+            ]);
+        }
     }
 
-    public function index() {
-        $data['customer'] = $this->CustomerModel->get_barang_data();
-        // var_dump($data);
-        // $this->load->view('formBarang', $data);
-    }
+	public function inputCustomer($json)
+	{
 
-    // public function insert() {
-    //     $kode_barang = $this->input->post('inputKode');
-    
-    // // Check if kode barang already exists
-    // if ($this->modelBarang->check_kode_barang_exists($kode_barang)) {
-    //     // If exists, return an error response
-    //     echo json_encode(['status' => 'error', 'message' => 'Kode Barang harus unique!']);
-    // } else {
-    //     // If not exists, proceed with the insert
-    //     $data = array(
-    //         'KODE_BARANG' => $kode_barang,
-    //         'NAMA_BARANG' => $this->input->post('inputNama'),
-    //         'HARGA_BARANG' => $this->input->post('inputHarga')
-    //     );
+		// Decode JSON menjadi array associative
+		$data = json_decode($json, true);
 
-    //     $this->modelBarang->insert_barang_data($data);
-    //     echo json_encode(['status' => 'success', 'message' => 'Data successfully saved!']);
-    // }
-    //     // // Get POST data
-    //     // $data = array(
-    //     //     'KODE_BARANG' => $this->input->post('inputKode'),
-    //     //     'NAMA_BARANG' => $this->input->post('inputNama'),
-    //     //     'HARGA_BARANG' => $this->input->post('inputHarga')
-    //     // );
+		// Set data ke $_POST
+		$_POST = $data;
 
-    //     // // var_dump($data);
+		// Validasi data
+		$this->load->library('form_validation');
 
-    //     // // Insert data into database
-    //     // $insert_id = $this->modelBarang->insert_barang_data($data);
+		$this->form_validation->set_rules('no_hp', 'No_hp', 'required|max_length[11]');
+		$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
+		$this->form_validation->set_rules('alamat', 'Alamat', 'required|max_length[100]');
+		$this->form_validation->set_rules('kota', 'Kota', 'required|max_length[50]');
 
-    //     // // if ($insert_id) {
-    //     // //     // Success
-    //     // //     echo json_encode(['status' => 'success', 'message' => 'Data successfully saved!']);
-    //     // // } else {
-    //     // //     // Failure
-    //     // //     echo json_encode(['status' => 'error', 'message' => 'Failed to save data.']);
-    //     // // }
-    // }
 
-    // public function delete(){
-    //     $kode_barang = $this->input->post('inputKode');
-    //     if ($kode_barang) {
-    //         $this->modelBarang->delete_barang_data($kode_barang);
-    //         echo json_encode(['status' => 'success', 'message' => 'Data successfully deleted!']);
-    //     } else {
-    //         echo json_encode(['status' => 'error', 'message' => 'No kode_barang provided']);
-    //     }
-    // }
+		if ($this->form_validation->run() == FALSE) {
+			// Jika validasi gagal
+			$errors = $this->form_validation->error_array();
+			echo json_encode([
+				'success' => false,
+				'message' => 'Error validation',
+				'errors' => $errors
+			]);
+			return;
+		}
 
-    // public function edit(){
-    //     $kode_barang = $this->input->post('inputKode');
-    //     $data = array(
-    //         'KODE_BARANG' => $this->input->post('inputKode'),
-    //         'NAMA_BARANG' => $this->input->post('inputNama'),
-    //         'HARGA_BARANG' => $this->input->post('inputHarga')
-    //     );
-        
-    //     $this->modelBarang->edit_barang_data($kode_barang, $data);
-        
-    // }
+		// Jika validasi berhasil, masukkan data ke database
+		$sql = 'INSERT INTO MK_MASTER_CUSTOMER (No_hp, Nama, Alamat, Kota) VALUES (?, ?, ?, ?)';
+		$inserted = $this->db->query($sql, [
+			$data['no_hp'],
+			$data['nama'],
+			$data['alamat'],
+			$data['kota']
+		]);
+
+		if ($inserted) {
+			echo json_encode([
+				'success' => true
+			]);
+		} else {
+			echo json_encode([
+				'success' => false,
+				'message' => 'Maaf ada kesalahan, mohon tunggu sebentar'
+			]);
+		}
+	}
 }

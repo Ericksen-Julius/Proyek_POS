@@ -56,7 +56,7 @@ class User extends CI_Controller
 		$hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
 
 		// Jika validasi berhasil, masukkan data ke database
-		$sql = 'INSERT INTO MK_MASTER_CUSTOMER (Nama,Password,Jabatan) VALUES (?, ?, ?)';
+		$sql = 'INSERT INTO MK_MASTER_USER (Nama,Password,Jabatan) VALUES (?, ?, ?)';
 		$inserted = $this->db->query($sql, [
 			$data['nama'],
 			$hashedPassword,
