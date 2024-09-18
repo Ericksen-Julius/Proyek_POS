@@ -8,6 +8,7 @@ class User extends CI_Controller
 	{
 		parent::__construct();
 		$this->load->model('userModel');
+		$this->load->library('form_validation');
 	}
 	public function getUser($keyword = false)
 	{
@@ -17,16 +18,28 @@ class User extends CI_Controller
 	public function user($parameter = null)
 	{
 		if ($this->input->method() == 'get') {
-			$this->getUser();
+			return $this->getUser($parameter);
 		} else if ($this->input->method() == 'post') {
+			if ($parameter != null) {
+				show_404();
+				return;
+			}
 			$json = file_get_contents('php://input');
 			$result = $this->inputUser($json);
 			return $result;
 		} else if ($this->input->method() == 'put') {
+			if ($parameter == null) {
+				show_404();
+				return;
+			}
 			$json = file_get_contents('php://input');
 			$result = $this->updateUser($parameter, $json);
 			return $result;
 		} else if ($this->input->method() == 'delete') {
+			if ($parameter == null) {
+				show_404();
+				return;
+			}
 			$result = $this->deleteUser($parameter);
 			return $result;
 		} else {
@@ -40,8 +53,6 @@ class User extends CI_Controller
 			$data = json_decode($json, true);
 
 			$_POST = $data;
-
-			$this->load->library('form_validation');
 
 			// Set validation rules
 			$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
@@ -109,7 +120,6 @@ class User extends CI_Controller
 			$data = json_decode($json, true);
 
 			// Validasi data
-			$this->load->library('form_validation');
 
 			$this->form_validation->set_data($data);  // Set data for validation
 
