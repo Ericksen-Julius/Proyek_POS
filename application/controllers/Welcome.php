@@ -24,6 +24,6 @@ class Welcome extends CI_Controller
 		$SQL = "SELECT * FROM MK_MASTER_USER";
 		$RES = $this->db->query($SQL)->result_array();
 		var_dump($RES);
-		// $this->load->view('welcome_message');
+		$this->load->view('welcome_message');
 	}
 }
