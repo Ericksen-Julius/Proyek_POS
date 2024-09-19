@@ -57,3 +57,4 @@ $route['user/(:any)'] = 'User/user/$1';
 $route['customer'] = 'Customer/customer';
 $route['barang'] = 'Barang/barang';
 $route['updateBarang'] = 'Barang/updateBarang';
+$route['nota'] = 'Nota/nota';
