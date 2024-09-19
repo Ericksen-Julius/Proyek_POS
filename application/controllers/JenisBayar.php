@@ -1,33 +1,33 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Customer extends CI_Controller {
+class JenisBayar extends CI_Controller {
 
     public function __construct()
 	{
 		parent::__construct();
-		$this->load->model('customerModel');
+		$this->load->model('jenisBayarModel');
 	}
-	public function getCustomer($keyword = false)
+	public function getJenisBayar($keyword = false)
 	{
-		$users = $this->customerModel->getCustomer($keyword); // Assuming getAllUsers is defined in the model
+		$users = $this->jenisBayarModel->getJenisBayar($keyword); // Assuming getAllUsers is defined in the model
 		var_dump($users);
 	}
-	public function customer()
+	public function jenisBayar()
 	{
 		if ($this->input->method() == 'get') {
-			$this->getCustomer();
+			$this->getJenisBayar();
 		} else if ($this->input->method() == 'post') {
 			$json = file_get_contents('php://input');
-			$result = $this->inputCustomer($json);
+			$result = $this->inputJenisBayar($json);
 			return $result;
 		} else if ($this->input->method() == 'put'){
             $json = file_get_contents('php://input');
-            $result = $this->editCustomer($json);
+            $result = $this->editJenisBayar($json);
             return $result;
         } else if ($this->input->method() == 'delete'){
             $json = file_get_contents('php://input');
-            $result = $this->deleteCustomer($json);
+            $result = $this->deleteJenisBayar($json);
 			return $result;
 		} else {
 			show_404();
@@ -35,7 +35,7 @@ class Customer extends CI_Controller {
 		}
 	}
 
-    public function editCustomer($json)
+    public function editJenisBayar($json)
     {
         // Decode JSON menjadi array associative
         $data = json_decode($json, true);
@@ -45,10 +45,8 @@ class Customer extends CI_Controller {
 
         $this->form_validation->set_data($data);
 
-        $this->form_validation->set_rules('no_hp', 'No_hp', 'required|max_length[11]');
-        $this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
-        $this->form_validation->set_rules('alamat', 'Alamat', 'required|max_length[100]');
-        $this->form_validation->set_rules('kota', 'Kota', 'required|max_length[50]');
+        $this->form_validation->set_rules('kode', 'Kode', 'required|max_length[5]');
+		$this->form_validation->set_rules('jenis_bayar', 'Jenis_bayar', 'required|max_length[20]');
 
         if ($this->form_validation->run() == FALSE) {
             // Jika validasi gagal
@@ -62,18 +60,16 @@ class Customer extends CI_Controller {
         }
 
         // Jika validasi berhasil, update data ke database
-        $sql = 'UPDATE MK_MASTER_CUSTOMER SET Nama = ?, Alamat = ?, Kota = ? WHERE No_hp = ?';
+        $sql = 'UPDATE MK_MASTER_JENIS_BAYAR SET JENIS_BAYAR = ? WHERE KODE = ?';
         $updated = $this->db->query($sql, [
-            $data['nama'],
-            $data['alamat'],
-            $data['kota'],
-            $data['no_hp']
+            $data['jenis_bayar'],
+            $data['kode']
         ]);
 
         if ($updated) {
             echo json_encode([
                 'success' => true,
-                'message' => 'customer updated successfully'
+                'message' => 'Customer updated successfully'
             ]);
         } else {
             echo json_encode([
@@ -83,17 +79,17 @@ class Customer extends CI_Controller {
         }
     }
 
-    public function deleteCustomer($json)
+    public function deleteJenisBayar($json)
 	{
 		try {
             $data = json_decode($json, true);
-			$sql = 'DELETE FROM MK_MASTER_CUSTOMER WHERE NO_HP = ?';
-			$this->db->query($sql, [$data['no_hp']]);
+			$sql = 'DELETE FROM MK_MASTER_JENIS_BAYAR WHERE KODE = ?';
+			$this->db->query($sql, [$data['kode']]);
 
 			if ($this->db->affected_rows() > 0) {
 				echo json_encode(['success' => true]);
 			} else {
-				throw new Exception('No user found with the given handphone number.');
+				throw new Exception('No jenis pembayaran found with the given code.');
 			}
 		} catch (Exception $e) {
 			echo json_encode([
@@ -103,7 +99,7 @@ class Customer extends CI_Controller {
 		}
 	}
 
-	public function inputCustomer($json)
+	public function inputJenisBayar($json)
 	{
 
 		// Decode JSON menjadi array associative
@@ -115,11 +111,8 @@ class Customer extends CI_Controller {
 		// Validasi data
 		$this->load->library('form_validation');
 
-		$this->form_validation->set_rules('no_hp', 'No_hp', 'required|max_length[11]');
-		$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
-		$this->form_validation->set_rules('alamat', 'Alamat', 'required|max_length[100]');
-		$this->form_validation->set_rules('kota', 'Kota', 'required|max_length[50]');
-
+		$this->form_validation->set_rules('kode', 'Kode', 'required|max_length[5]');
+		$this->form_validation->set_rules('jenis_bayar', 'Jenis_bayar', 'required|max_length[20]');
 
 		if ($this->form_validation->run() == FALSE) {
 			// Jika validasi gagal
@@ -133,12 +126,10 @@ class Customer extends CI_Controller {
 		}
 
 		// Jika validasi berhasil, masukkan data ke database
-		$sql = 'INSERT INTO MK_MASTER_CUSTOMER (No_hp, Nama, Alamat, Kota) VALUES (?, ?, ?, ?)';
+		$sql = 'INSERT INTO MK_MASTER_JENIS_BAYAR (KODE, JENIS_BAYAR) VALUES (?, ?)';
 		$inserted = $this->db->query($sql, [
-			$data['no_hp'],
-			$data['nama'],
-			$data['alamat'],
-			$data['kota']
+			$data['kode'],
+			$data['jenis_bayar']
 		]);
 
 		if ($inserted) {
