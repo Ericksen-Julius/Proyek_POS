@@ -1,9 +1,10 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Customer extends CI_Controller {
+class Customer extends CI_Controller
+{
 
-    public function __construct()
+	public function __construct()
 	{
 		parent::__construct();
 		$this->load->model('customerModel');
@@ -11,7 +12,7 @@ class Customer extends CI_Controller {
 	public function getCustomer($keyword = false)
 	{
 		$users = $this->customerModel->getCustomer($keyword); // Assuming getAllUsers is defined in the model
-		var_dump($users);
+		echo json_encode($users);
 	}
 	public function customer()
 	{
@@ -21,13 +22,13 @@ class Customer extends CI_Controller {
 			$json = file_get_contents('php://input');
 			$result = $this->inputCustomer($json);
 			return $result;
-		} else if ($this->input->method() == 'put'){
-            $json = file_get_contents('php://input');
-            $result = $this->editCustomer($json);
-            return $result;
-        } else if ($this->input->method() == 'delete'){
-            $json = file_get_contents('php://input');
-            $result = $this->deleteCustomer($json);
+		} else if ($this->input->method() == 'put') {
+			$json = file_get_contents('php://input');
+			$result = $this->editCustomer($json);
+			return $result;
+		} else if ($this->input->method() == 'delete') {
+			$json = file_get_contents('php://input');
+			$result = $this->deleteCustomer($json);
 			return $result;
 		} else {
 			show_404();
@@ -35,58 +36,58 @@ class Customer extends CI_Controller {
 		}
 	}
 
-    public function editCustomer($json)
-    {
-        // Decode JSON menjadi array associative
-        $data = json_decode($json, true);
+	public function editCustomer($json)
+	{
+		// Decode JSON menjadi array associative
+		$data = json_decode($json, true);
 
-        // Validasi data
-        $this->load->library('form_validation');
+		// Validasi data
+		$this->load->library('form_validation');
 
-        $this->form_validation->set_data($data);
+		$this->form_validation->set_data($data);
 
-        $this->form_validation->set_rules('no_hp', 'No_hp', 'required|max_length[11]');
-        $this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
-        $this->form_validation->set_rules('alamat', 'Alamat', 'required|max_length[100]');
-        $this->form_validation->set_rules('kota', 'Kota', 'required|max_length[50]');
+		$this->form_validation->set_rules('no_hp', 'No_hp', 'required|max_length[11]');
+		$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
+		$this->form_validation->set_rules('alamat', 'Alamat', 'required|max_length[100]');
+		$this->form_validation->set_rules('kota', 'Kota', 'required|max_length[50]');
 
-        if ($this->form_validation->run() == FALSE) {
-            // Jika validasi gagal
-            $errors = $this->form_validation->error_array();
-            echo json_encode([
-                'success' => false,
-                'message' => 'Error validation',
-                'errors' => $errors
-            ]);
-            return;
-        }
+		if ($this->form_validation->run() == FALSE) {
+			// Jika validasi gagal
+			$errors = $this->form_validation->error_array();
+			echo json_encode([
+				'success' => false,
+				'message' => 'Error validation',
+				'errors' => $errors
+			]);
+			return;
+		}
 
-        // Jika validasi berhasil, update data ke database
-        $sql = 'UPDATE MK_MASTER_CUSTOMER SET Nama = ?, Alamat = ?, Kota = ? WHERE No_hp = ?';
-        $updated = $this->db->query($sql, [
-            $data['nama'],
-            $data['alamat'],
-            $data['kota'],
-            $data['no_hp']
-        ]);
+		// Jika validasi berhasil, update data ke database
+		$sql = 'UPDATE MK_MASTER_CUSTOMER SET Nama = ?, Alamat = ?, Kota = ? WHERE No_hp = ?';
+		$updated = $this->db->query($sql, [
+			$data['nama'],
+			$data['alamat'],
+			$data['kota'],
+			$data['no_hp']
+		]);
 
-        if ($updated) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'customer updated successfully'
-            ]);
-        } else {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Maaf no_hp tidak ditemukan'
-            ]);
-        }
-    }
+		if ($updated) {
+			echo json_encode([
+				'success' => true,
+				'message' => 'customer updated successfully'
+			]);
+		} else {
+			echo json_encode([
+				'success' => false,
+				'message' => 'Maaf no_hp tidak ditemukan'
+			]);
+		}
+	}
 
-    public function deleteCustomer($json)
+	public function deleteCustomer($json)
 	{
 		try {
-            $data = json_decode($json, true);
+			$data = json_decode($json, true);
 			$sql = 'DELETE FROM MK_MASTER_CUSTOMER WHERE NO_HP = ?';
 			$this->db->query($sql, [$data['no_hp']]);
 

@@ -8,6 +8,7 @@ class Nota extends CI_Controller
     {
         parent::__construct();
         $this->load->model('notaModel');
+        $this->load->model('kursModel');
         $this->load->library(['form_validation']);
     }
     public function getNota($keyword = false)
@@ -15,7 +16,7 @@ class Nota extends CI_Controller
         $nota = $this->notaModel->getNota($keyword); // Assuming getAllnota is defined in the model
         return $nota;
     }
-    public function barang($parameter = null)
+    public function nota($parameter = null)
     {
         if ($this->input->method() == 'get') {
             $this->getNota($parameter);
@@ -32,7 +33,7 @@ class Nota extends CI_Controller
                 show_404();
                 return;
             }
-            $result = $this->deleteBarang($parameter);
+            $result = $this->deleteNota($parameter);
             return $result;
         } else {
             show_404();
@@ -48,11 +49,16 @@ class Nota extends CI_Controller
 
             // Set validation rules
             $this->form_validation->set_rules('no_hp', 'No Hp', 'required|max_length[15]');
-            $this->form_validation->set_rules('tanggal', 'Tanggal', 'required|valid_date');
             $this->form_validation->set_rules('user_input', 'User input', 'required|numeric|max_length[11]');
             $this->form_validation->set_rules('barcode', 'Barcode', 'required|max_length[14]');
-            $this->form_validation->set_rules('kurs', 'Kurs', 'required');
+            // $this->form_validation->set_rules('barcode', 'Barcode', 'required|max_length[14]|callback_check_barcode_exists');
             $this->form_validation->set_rules('kode_bayar', 'Kode Bayar', 'required');
+
+            $kurs = $this->kursModel->getKurs();
+            $tanggal = $kurs['data'][0]['TANGGAL'];
+            $tanggal = DateTime::createFromFormat('d-M-y', $tanggal);
+            $tanggal = $tanggal->format('d/m/Y');
+            $kurs = $kurs['data'][0]['KURS'];
 
             // Additional rule for file upload
 
@@ -71,15 +77,17 @@ class Nota extends CI_Controller
             $query = $this->db->query($sql, $data['barcode']);
 
             $result = $query->row_array();
-            $harga = $result['berat'] * $data['kurs'];
+            // echo ($result['BERAT']);
+            // return;
+            $harga = $result['BERAT'] * $kurs;
 
             $notaCode = $this->generateNotaCode();
 
-            $sql = 'INSERT INTO MK_NOTA_PENJUALAN_A (NO_DOK,NO_HP, TANGGAL, USER_INPUT) VALUES (?, ?, ?, ?)';
+            $sql = "INSERT INTO MK_NOTA_PENJUALAN_A (NO_DOK,NO_HP, TANGGAL, USER_INPUT) VALUES (?, ?, TO_DATE(?, 'DD/MM/YYYY'), ?)";
             $this->db->query($sql, [
                 $notaCode,
                 $data['no_hp'],
-                $data['tanggal'],
+                $tanggal,
                 $data['user_input'],
 
             ]);
@@ -87,10 +95,10 @@ class Nota extends CI_Controller
             $this->db->query($sql, [
                 $notaCode,
                 $data['barcode'],
-                $data['kurs'],
+                $kurs,
                 $harga
             ]);
-            $sql = 'INSERT INTO MK_NOTA_PENJUALAN_C (NO_DOK, KODE_BAYAR, NOMINAL) VALUES (?, ?, ?,?)';
+            $sql = 'INSERT INTO MK_NOTA_PENJUALAN_C (NO_DOK, KODE_BAYAR, NOMINAL) VALUES (?, ?, ?)';
             $this->db->query($sql, [
                 $notaCode,
                 $data['kode_bayar'],
@@ -108,34 +116,16 @@ class Nota extends CI_Controller
     }
 
 
-    public function deleteBarang($id)
+    public function deleteNota($id)
     {
         try {
-            // Ambil nama file foto berdasarkan ID
-            $sql = 'SELECT FOTO FROM MK_MASTER_BARANG WHERE BARCODE_ID = ?';
-            $query = $this->db->query($sql, [$id]);
-            $result = $query->row();
+            $deleteSql = 'DELETE FROM MK_NOTA_PENJUALAN_A WHERE NO_DOK = ?';
+            $this->db->query($deleteSql, [$id]);
 
-            if ($result) {
-                // Hapus data dari database
-                $deleteSql = 'DELETE FROM MK_MASTER_BARANG WHERE BARCODE_ID = ?';
-                $this->db->query($deleteSql, [$id]);
-
-                if ($this->db->affected_rows() > 0) {
-                    // Hapus file jika ada
-                    if ($result->FOTO) {
-                        $filePath = FCPATH . 'uploads/' . $result->FOTO;
-                        if (file_exists($filePath)) {
-                            unlink($filePath);  // Hapus file dari direktori
-                        }
-                    }
-
-                    echo json_encode(['success' => true]);
-                } else {
-                    throw new Exception('No barang found with the given ID.');
-                }
+            if ($this->db->affected_rows() > 0) {
+                echo json_encode(['success' => true]);
             } else {
-                throw new Exception('No barang found with the given ID.');
+                throw new Exception('No Dok tidak valid.');
             }
         } catch (Exception $e) {
             echo json_encode([
@@ -158,5 +148,59 @@ class Nota extends CI_Controller
         $nota_dok = 'NT' . $year . $randomNumber;
 
         return $nota_dok;
+    }
+    public function check_barcode_exists($barcode)
+    {
+        $sql = 'SELECT 1 FROM MK_MASTER_BARANG WHERE BARCODE_ID = ?';
+        $query = $this->db->query($sql, [$barcode]);
+        $result = $query->row();
+
+
+        if (!$result) {
+            $this->form_validation->set_message('check_barcode_exists', 'Barcode barang tidak ditemukan di database');
+            return false;
+        }
+
+        return true;
+    }
+    public function check_no_hp_exists($np_hp)
+    {
+        $sql = 'SELECT 1 FROM MK_MASTER_CUSTOMER WHERE NO_HP = ?';
+        $query = $this->db->query($sql, [$np_hp]);
+        $result = $query->row();
+
+
+        if (!$result) {
+            $this->form_validation->set_message('check_np_hp_exists', 'Np hp customer tidak ditemukan di database');
+            return false;
+        }
+
+        return true;
+    }
+    public function check_user_input_exists($user_input)
+    {
+        $sql = 'SELECT 1 FROM MK_MASTER_USER WHERE USER_ID = ?';
+        $query = $this->db->query($sql, [$user_input]);
+        $result = $query->row();
+
+        if (!$result) {
+            $this->form_validation->set_message('check_user_input_exists', 'User id admin tidak ditemukan di database');
+            return false;
+        }
+
+        return true;
+    }
+    public function check_jenis_bayar_exists($jenis_bayar)
+    {
+        $sql = 'SELECT 1 FROM MK_MASTER_JENIS_BAYAR WHERE KODE = ?';
+        $query = $this->db->query($sql, [$jenis_bayar]);
+        $result = $query->row();
+
+        if (!$result) {
+            $this->form_validation->set_message('check_jenis_bayar_exists', 'Jenis bayar tidak valid');
+            return false;
+        }
+
+        return true;
     }
 }

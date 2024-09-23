@@ -1,9 +1,11 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class customerModel extends CI_Model {
+class customerModel extends CI_Model
+{
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
         $this->load->database();
     }
@@ -17,17 +19,16 @@ class customerModel extends CI_Model {
             '%' . $keyword . '%'
         ]);
 
-        if ($data){
-            echo json_encode([
-				'success' => true,
+        if ($data) {
+            return [
+                'success' => true,
                 'data' => $data->result_array()
-			]);
+            ];
         } else {
-            echo json_encode([
-				'success' => false,
-				'message' => 'Maaf ada kesalahan, mohon tunggu sebentar'
-			]);
+            return [
+                'success' => false,
+                'message' => 'Maaf ada kesalahan, mohon tunggu sebentar'
+            ];
         }
     }
-    
 }

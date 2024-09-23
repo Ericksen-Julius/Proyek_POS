@@ -22,15 +22,15 @@ class barangModel extends CI_Model
         ]);
         $barang = $data->result_array();
         if (!empty($barang)) {
-            echo json_encode([
+            return [
                 'success' => true,
                 'data' => $barang
-            ]);
+            ];
         } else {
-            echo json_encode([
+            return [
                 'success' => false,
                 'message' => 'No barang found'
-            ]);
+            ];
         }
     }
 }

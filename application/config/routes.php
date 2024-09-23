@@ -60,3 +60,4 @@ $route['customer'] = 'Customer/customer';
 $route['barang'] = 'Barang/barang';
 $route['updateBarang'] = 'Barang/updateBarang';
 $route['nota'] = 'Nota/nota';
+$route['nota/(:any)'] = 'Nota/nota/$1';

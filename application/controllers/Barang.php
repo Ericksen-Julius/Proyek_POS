@@ -18,7 +18,7 @@ class Barang extends CI_Controller
     public function barang($parameter = null)
     {
         if ($this->input->method() == 'get') {
-            $this->getBarang($parameter);
+            echo json_encode($this->getBarang($parameter));
         } else if ($this->input->method() == 'post') {
             if ($parameter != null) {
                 show_404();

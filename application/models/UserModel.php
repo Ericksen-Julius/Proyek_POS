@@ -21,15 +21,15 @@ class userModel extends CI_Model
         ]);
         $users = $data->result_array();
         if (!empty($users)) {
-            echo json_encode([
+            return [
                 'success' => true,
                 'data' => $users
-            ]);
+            ];
         } else {
-            echo json_encode([
+            return [
                 'success' => false,
                 'message' => 'No users found'
-            ]);
+            ];
         }
     }
 }

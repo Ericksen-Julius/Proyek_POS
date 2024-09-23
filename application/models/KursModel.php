@@ -16,16 +16,16 @@ class kursModel extends CI_Model
         $data = $this->db->query($sql);
 
         if ($data) {
-            echo json_encode([
+            return [
                 'success' => true,
                 'message' => 'berhasil get kurs',
                 'data' => $data->result_array()
-            ]);
+            ];
         } else {
-            echo json_encode([
+            return [
                 'success' => false,
                 'message' => 'Maaf ada kesalahan, mohon tunggu sebentar'
-            ]);
+            ];
         }
     }
 }
