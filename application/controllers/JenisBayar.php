@@ -1,17 +1,18 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class JenisBayar extends CI_Controller {
+class JenisBayar extends CI_Controller
+{
 
-    public function __construct()
+	public function __construct()
 	{
 		parent::__construct();
 		$this->load->model('jenisBayarModel');
 	}
 	public function getJenisBayar($keyword = false)
 	{
-		$users = $this->jenisBayarModel->getJenisBayar($keyword); // Assuming getAllUsers is defined in the model
-		var_dump($users);
+		$jenisBayar = $this->jenisBayarModel->getJenisBayar($keyword); // Assuming getAlljenisBayar is defined in the model
+		echo json_encode($jenisBayar);
 	}
 	public function jenisBayar()
 	{
@@ -21,13 +22,13 @@ class JenisBayar extends CI_Controller {
 			$json = file_get_contents('php://input');
 			$result = $this->inputJenisBayar($json);
 			return $result;
-		} else if ($this->input->method() == 'put'){
-            $json = file_get_contents('php://input');
-            $result = $this->editJenisBayar($json);
-            return $result;
-        } else if ($this->input->method() == 'delete'){
-            $json = file_get_contents('php://input');
-            $result = $this->deleteJenisBayar($json);
+		} else if ($this->input->method() == 'put') {
+			$json = file_get_contents('php://input');
+			$result = $this->editJenisBayar($json);
+			return $result;
+		} else if ($this->input->method() == 'delete') {
+			$json = file_get_contents('php://input');
+			$result = $this->deleteJenisBayar($json);
 			return $result;
 		} else {
 			show_404();
@@ -35,54 +36,54 @@ class JenisBayar extends CI_Controller {
 		}
 	}
 
-    public function editJenisBayar($json)
-    {
-        // Decode JSON menjadi array associative
-        $data = json_decode($json, true);
+	public function editJenisBayar($json)
+	{
+		// Decode JSON menjadi array associative
+		$data = json_decode($json, true);
 
-        // Validasi data
-        $this->load->library('form_validation');
+		// Validasi data
+		$this->load->library('form_validation');
 
-        $this->form_validation->set_data($data);
+		$this->form_validation->set_data($data);
 
-        $this->form_validation->set_rules('kode', 'Kode', 'required|max_length[5]');
+		$this->form_validation->set_rules('kode', 'Kode', 'required|max_length[5]');
 		$this->form_validation->set_rules('jenis_bayar', 'Jenis_bayar', 'required|max_length[20]');
 
-        if ($this->form_validation->run() == FALSE) {
-            // Jika validasi gagal
-            $errors = $this->form_validation->error_array();
-            echo json_encode([
-                'success' => false,
-                'message' => 'Error validation',
-                'errors' => $errors
-            ]);
-            return;
-        }
+		if ($this->form_validation->run() == FALSE) {
+			// Jika validasi gagal
+			$errors = $this->form_validation->error_array();
+			echo json_encode([
+				'success' => false,
+				'message' => 'Error validation',
+				'errors' => $errors
+			]);
+			return;
+		}
 
-        // Jika validasi berhasil, update data ke database
-        $sql = 'UPDATE MK_MASTER_JENIS_BAYAR SET JENIS_BAYAR = ? WHERE KODE = ?';
-        $updated = $this->db->query($sql, [
-            $data['jenis_bayar'],
-            $data['kode']
-        ]);
+		// Jika validasi berhasil, update data ke database
+		$sql = 'UPDATE MK_MASTER_JENIS_BAYAR SET JENIS_BAYAR = ? WHERE KODE = ?';
+		$updated = $this->db->query($sql, [
+			$data['jenis_bayar'],
+			$data['kode']
+		]);
 
-        if ($updated) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Customer updated successfully'
-            ]);
-        } else {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Maaf no_hp tidak ditemukan'
-            ]);
-        }
-    }
+		if ($updated) {
+			echo json_encode([
+				'success' => true,
+				'message' => 'Customer updated successfully'
+			]);
+		} else {
+			echo json_encode([
+				'success' => false,
+				'message' => 'Maaf no_hp tidak ditemukan'
+			]);
+		}
+	}
 
-    public function deleteJenisBayar($json)
+	public function deleteJenisBayar($json)
 	{
 		try {
-            $data = json_decode($json, true);
+			$data = json_decode($json, true);
 			$sql = 'DELETE FROM MK_MASTER_JENIS_BAYAR WHERE KODE = ?';
 			$this->db->query($sql, [$data['kode']]);
 

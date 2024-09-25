@@ -161,4 +161,66 @@ class User extends CI_Controller
 			]);
 		}
 	}
+	public function authenticateUser()
+	{
+		if ($this->input->method() == 'post') {
+			try {
+				$json = file_get_contents('php://input');
+				$data = json_decode($json, true);
+
+				$_POST = $data;
+
+				// Set validation rules
+				$this->form_validation->set_rules('user_id', 'user_id', 'required|integer');
+				$this->form_validation->set_rules('password', 'Password', 'required');
+				// Validate the input data
+				if ($this->form_validation->run() == FALSE) {
+					// If validation fails, return errors
+					$errors = $this->form_validation->error_array();
+					echo json_encode([
+						'success' => false,
+						'message' => 'Error validation',
+						'errors' => $errors
+					]);
+					return;
+				}
+
+				// Retrieve the user from the database
+				$sql = 'SELECT * FROM MK_MASTER_USER WHERE USER_ID = ?';
+				$query = $this->db->query($sql, [$data['user_id']]);
+				$user = $query->row_array();
+
+				if ($user) {
+					if (password_verify($data['password'], $user['PASSWORD'])) {
+						// unset($user['PASSWORD']); // Remove password from the response
+						$user['PASSWORD'] = $data['password'];
+						echo json_encode([
+							'success' => true,
+							'user' => $user
+						]);
+					} else {
+						// Invalid password
+						echo json_encode([
+							'success' => false,
+							'message' => 'Invalid password'
+						]);
+					}
+				} else {
+					// User not found
+					echo json_encode([
+						'success' => false,
+						'message' => 'User not found'
+					]);
+				}
+			} catch (Exception $e) {
+				echo json_encode([
+					'success' => false,
+					'message' => $e->getMessage()
+				]);
+			}
+		} else {
+			show_404();
+			return;
+		}
+	}
 }

@@ -50,19 +50,10 @@ class Nota extends CI_Controller
             // Set validation rules
             $this->form_validation->set_rules('no_hp', 'No Hp', 'required|max_length[15]');
             $this->form_validation->set_rules('user_input', 'User input', 'required|numeric|max_length[11]');
-            $this->form_validation->set_rules('barcode', 'Barcode', 'required|max_length[14]');
-            // $this->form_validation->set_rules('barcode', 'Barcode', 'required|max_length[14]|callback_check_barcode_exists');
             $this->form_validation->set_rules('kode_bayar', 'Kode Bayar', 'required');
+            $this->form_validation->set_rules('nominal', 'Nominal', 'required');
 
-            $kurs = $this->kursModel->getKurs();
-            $tanggal = $kurs['data'][0]['TANGGAL'];
-            $tanggal = DateTime::createFromFormat('d-M-y', $tanggal);
-            $tanggal = $tanggal->format('d/m/Y');
-            $kurs = $kurs['data'][0]['KURS'];
-
-            // Additional rule for file upload
-
-
+            // Validate the input data
             if ($this->form_validation->run() == FALSE) {
                 // Validation failed
                 $errors = $this->form_validation->error_array();
@@ -73,37 +64,49 @@ class Nota extends CI_Controller
                 ]);
                 return;
             }
-            $sql = 'SELECT berat FROM MK_MASTER_BARANG WHERE BARCODE_ID = ?';
-            $query = $this->db->query($sql, $data['barcode']);
 
-            $result = $query->row_array();
-            // echo ($result['BERAT']);
-            // return;
-            $harga = $result['BERAT'] * $kurs;
+            // Fetch the exchange rate and date
+            $kurs = $this->kursModel->getKurs();
+            $tanggal = $kurs['data'][0]['TANGGAL'];
+            $tanggal = DateTime::createFromFormat('d-M-y', $tanggal);
+            $tanggal = $tanggal->format('d/m/Y');
+            $kurs = $kurs['data'][0]['KURS'];
 
             $notaCode = $this->generateNotaCode();
 
-            $sql = "INSERT INTO MK_NOTA_PENJUALAN_A (NO_DOK,NO_HP, TANGGAL, USER_INPUT) VALUES (?, ?, TO_DATE(?, 'DD/MM/YYYY'), ?)";
+            $sql = "INSERT INTO MK_NOTA_PENJUALAN_A (NO_DOK, NO_HP, TANGGAL, USER_INPUT) VALUES (?, ?, TO_DATE(?, 'DD/MM/YYYY'), ?)";
             $this->db->query($sql, [
                 $notaCode,
                 $data['no_hp'],
                 $tanggal,
-                $data['user_input'],
+                $data['user_input']
+            ]);
 
-            ]);
-            $sql = 'INSERT INTO MK_NOTA_PENJUALAN_B (NO_DOK, BARCODE, KURS,HARGA) VALUES (?, ?, ?, ?)';
-            $this->db->query($sql, [
-                $notaCode,
-                $data['barcode'],
-                $kurs,
-                $harga
-            ]);
+            foreach ($data['barang'] as $barang) {
+                $sql = 'SELECT BERAT FROM MK_MASTER_BARANG WHERE BARCODE_ID = ?';
+                $query = $this->db->query($sql, $barang['barcode']);
+                $result = $query->row_array();
+
+                $harga = $result['BERAT'] * $kurs;
+
+                $sql = 'INSERT INTO MK_NOTA_PENJUALAN_B (NO_DOK, BARCODE, KURS, HARGA,COUNT) VALUES (?, ?, ?, ?, ?)';
+                $this->db->query($sql, [
+                    $notaCode,
+                    $barang['barcode'],
+                    $kurs,
+                    $harga,
+                    $barang['count']
+                ]);
+            }
+
             $sql = 'INSERT INTO MK_NOTA_PENJUALAN_C (NO_DOK, KODE_BAYAR, NOMINAL) VALUES (?, ?, ?)';
             $this->db->query($sql, [
                 $notaCode,
                 $data['kode_bayar'],
-                $harga
+                $data['nominal']
             ]);
+
+            // Return a success response
             echo json_encode([
                 'success' => true
             ]);
