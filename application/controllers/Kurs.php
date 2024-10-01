@@ -55,24 +55,63 @@ class Kurs extends CI_Controller
             return;
         }
 
-        // Jika validasi berhasil, masukkan data ke database
-        $sql = "INSERT INTO MK_MASTER_KURS (TANGGAL, KURS) VALUES (TO_DATE(?, 'DD/MM/YYYY'), ?)";
-        $inserted = $this->db->query($sql, [
-            $data['tanggal'],
-            $data['kurs'],
-        ]);
-
-        if ($inserted) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'berhasil input kurs'
-            ]);
+        $sqlCheck = "SELECT COUNT(*) as count FROM MK_MASTER_KURS WHERE TANGGAL = TO_DATE(?, 'DD/MM/YYYY')";
+        $countResult = $this->db->query($sqlCheck, [$data['tanggal']])->row();
+        // var_dump($countResult->COUNT);
+        // return;
+        
+        if ($countResult->COUNT > 0) {
+            // If record exists, update it
+            $sqlUpdate = "UPDATE MK_MASTER_KURS SET KURS = ? WHERE TANGGAL = TO_DATE(?, 'DD/MM/YYYY')";
+            $updated = $this->db->query($sqlUpdate, [$data['kurs'], $data['tanggal']]);
+            if ($updated) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'berhasil update kurs'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Maaf ada kesalahan, mohon tunggu sebentar'
+                ]);
+            }
         } else {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Maaf ada kesalahan, mohon tunggu sebentar'
+            $sql = "INSERT INTO MK_MASTER_KURS (TANGGAL, KURS) VALUES (TO_DATE(?, 'DD/MM/YYYY'), ?)";
+            $inserted = $this->db->query($sql, [
+                $data['tanggal'],
+                $data['kurs'],
             ]);
+            if ($inserted) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'berhasil input kurs'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Maaf ada kesalahan, mohon tunggu sebentar'
+                ]);
+            }
         }
+
+        // Jika validasi berhasil, masukkan data ke database
+        // $sql = "INSERT INTO MK_MASTER_KURS (TANGGAL, KURS) VALUES (TO_DATE(?, 'DD/MM/YYYY'), ?)";
+        // $inserted = $this->db->query($sql, [
+        //     $data['tanggal'],
+        //     $data['kurs'],
+        // ]);
+
+        // if ($inserted) {
+        //     echo json_encode([
+        //         'success' => true,
+        //         'message' => 'berhasil input kurs'
+        //     ]);
+        // } else {
+        //     echo json_encode([
+        //         'success' => false,
+        //         'message' => 'Maaf ada kesalahan, mohon tunggu sebentar'
+        //     ]);
+        // }
     }
     public function validate_date($date)
     {
