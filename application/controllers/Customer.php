@@ -46,7 +46,7 @@ class Customer extends CI_Controller
 
 		$this->form_validation->set_data($data);
 
-		$this->form_validation->set_rules('no_hp', 'No_hp', 'required|max_length[11]');
+		$this->form_validation->set_rules('no_hp', 'No HP', 'required|max_length[11]|is_unique[MK_MASTER_CUSTOMER.NO_HP]');
 		$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
 		$this->form_validation->set_rules('alamat', 'Alamat', 'required|max_length[100]');
 		$this->form_validation->set_rules('kota', 'Kota', 'required|max_length[50]');
@@ -116,7 +116,7 @@ class Customer extends CI_Controller
 		// Validasi data
 		$this->load->library('form_validation');
 
-		$this->form_validation->set_rules('no_hp', 'No_hp', 'required|max_length[11]');
+		$this->form_validation->set_rules('no_hp', 'No_hp', 'required|max_length[11]|is_unique[MK_MASTER_CUSTOMER.NO_HP]');
 		$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
 		$this->form_validation->set_rules('alamat', 'Alamat', 'required|max_length[100]');
 		$this->form_validation->set_rules('kota', 'Kota', 'required|max_length[50]');
