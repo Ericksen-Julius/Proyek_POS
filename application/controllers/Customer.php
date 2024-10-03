@@ -46,7 +46,7 @@ class Customer extends CI_Controller
 
 		$this->form_validation->set_data($data);
 
-		$this->form_validation->set_rules('no_hp', 'No HP', 'required|max_length[11]|is_unique[MK_MASTER_CUSTOMER.NO_HP]');
+		$this->form_validation->set_rules('no_hp', 'No HP', 'required|max_length[11]');
 		$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
 		$this->form_validation->set_rules('alamat', 'Alamat', 'required|max_length[100]');
 		$this->form_validation->set_rules('kota', 'Kota', 'required|max_length[50]');
@@ -88,9 +88,18 @@ class Customer extends CI_Controller
 	{
 		try {
 			$data = json_decode($json, true);
+			$sqlCheck = "SELECT COUNT(*) as count FROM MK_NOTA_PENJUALAN_A WHERE NO_HP = ?";
+			$countResult = $this->db->query($sqlCheck, [$data['no_hp']])->row();
+			if ($countResult->COUNT > 0) {
+				throw new Exception('Customer masih berhubungan dengan nota, tidak bisa dihapus');
+			}
 			$sql = 'DELETE FROM MK_MASTER_CUSTOMER WHERE NO_HP = ?';
 			$this->db->query($sql, [$data['no_hp']]);
 
+			if ($error['code'] != 0) {
+				// Ada error, tangani di sini
+				throw new Exception($error['message']);
+			}
 			if ($this->db->affected_rows() > 0) {
 				echo json_encode(['success' => true]);
 			} else {

@@ -67,8 +67,7 @@ class Nota extends CI_Controller
 
             // Fetch the exchange rate and date
             $kurs = $this->kursModel->getKurs();
-            $tanggal = $kurs['data'][0]['TANGGAL'];
-            $tanggal = DateTime::createFromFormat('d-M-y', $tanggal);
+            $tanggal = new DateTime(); // Membuat objek DateTime dengan tanggal saat ini
             $tanggal = $tanggal->format('d/m/Y');
             $kurs = $kurs['data'][0]['KURS'];
 
