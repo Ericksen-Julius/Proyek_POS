@@ -49,8 +49,10 @@ class Nota extends CI_Controller
 
             // Set validation rules
             $this->form_validation->set_rules('no_hp', 'No Hp', 'required|max_length[15]');
+            $this->form_validation->set_rules('nota_code', 'Nota Code', 'required|max_length[14]');
             $this->form_validation->set_rules('user_input', 'User input', 'required|numeric|max_length[11]');
             $this->form_validation->set_rules('kode_bayar', 'Kode Bayar', 'required');
+            $this->form_validation->set_rules('discount', 'Discount', 'required');
             $this->form_validation->set_rules('nominal', 'Nominal', 'required');
 
             // Validate the input data
@@ -71,11 +73,11 @@ class Nota extends CI_Controller
             $tanggal = $tanggal->format('d/m/Y');
             $kurs = $kurs['data'][0]['KURS'];
 
-            $notaCode = $this->generateNotaCode();
+            // $notaCode = $this->generateNotaCode();
 
             $sql = "INSERT INTO MK_NOTA_PENJUALAN_A (NO_DOK, NO_HP, TANGGAL, USER_INPUT) VALUES (?, ?, TO_DATE(?, 'DD/MM/YYYY'), ?)";
             $this->db->query($sql, [
-                $notaCode,
+                $data['nota_code'],
                 $data['no_hp'],
                 $tanggal,
                 $data['user_input']
@@ -90,7 +92,7 @@ class Nota extends CI_Controller
 
                 $sql = 'INSERT INTO MK_NOTA_PENJUALAN_B (NO_DOK, BARCODE, KURS, HARGA,COUNT) VALUES (?, ?, ?, ?, ?)';
                 $this->db->query($sql, [
-                    $notaCode,
+                    $data['nota_code'],
                     $barang['barcode'],
                     $kurs,
                     $harga,
@@ -98,11 +100,13 @@ class Nota extends CI_Controller
                 ]);
             }
 
-            $sql = 'INSERT INTO MK_NOTA_PENJUALAN_C (NO_DOK, KODE_BAYAR, NOMINAL) VALUES (?, ?, ?)';
+            $sql = 'INSERT INTO MK_NOTA_PENJUALAN_C (NO_DOK, KODE_BAYAR, NOMINAL,NO_REK, DISCOUNT) VALUES (?, ?, ?, ?, ?)';
             $this->db->query($sql, [
-                $notaCode,
+                $data['nota_code'],
                 $data['kode_bayar'],
-                $data['nominal']
+                $data['nominal'],
+                isset($data['no_rek']) ? $data['no_rek'] : null,
+                $data['discount']
             ]);
 
             // Return a success response

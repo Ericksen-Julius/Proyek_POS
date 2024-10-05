@@ -51,6 +51,7 @@ class Barang extends CI_Controller
 
             // Set validation rules
             $this->form_validation->set_rules('nama', 'Nama', 'required|max_length[50]');
+            $this->form_validation->set_rules('barcode_id', 'Barcode', 'required|max_length[14]|is_unique[MK_MASTER_BARANG.BARCODE_ID]');
             $this->form_validation->set_rules('berat', 'Berat', 'required|numeric');
             $this->form_validation->set_rules('kategori', 'Kategori', 'required|max_length[10]');
 
@@ -92,7 +93,7 @@ class Barang extends CI_Controller
                 $this->input->post('berat'),
                 $this->input->post('kategori'),
                 $fotoPath,
-                $barcode
+                $this->input->post('barcode_id'),
             ]);
 
             if ($inserted) {
@@ -159,6 +160,7 @@ class Barang extends CI_Controller
 
             // Set validation rules for other fields
             $this->form_validation->set_rules('nama', 'Nama', 'required|max_length[50]');
+            // $this->form_validation->set_rules('barcode_id', 'Barcode', 'required|max_length[14]|is_unique[MK_MASTER_BARANG.BARCODE_ID]');
             $this->form_validation->set_rules('berat', 'Berat', 'required|numeric');
             $this->form_validation->set_rules('kategori', 'Kategori', 'required|max_length[10]');
 

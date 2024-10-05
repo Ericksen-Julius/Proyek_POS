@@ -13,7 +13,7 @@ class User extends CI_Controller
 	public function getUser($keyword = false)
 	{
 		$users = $this->userModel->getUser($keyword); // Assuming getAllUsers is defined in the model
-		var_dump($users);
+		echo json_encode($users);
 	}
 	public function user($parameter = null)
 	{
