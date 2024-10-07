@@ -55,6 +55,7 @@ $route['translate_uri_dashes'] = FALSE;
 $route['user'] = 'User/user';
 $route['user/(:any)'] = 'User/user/$1';
 $route['kurs'] = 'Kurs/kurs';
+$route['getAllKurs'] = 'Kurs/getAllKurs';
 $route['jenisbayar'] = 'JenisBayar/jenisBayar';
 $route['customer'] = 'Customer/customer';
 $route['barang'] = 'Barang/barang';

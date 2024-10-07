@@ -123,4 +123,12 @@ class Kurs extends CI_Controller
             return FALSE;
         }
     }
+
+    public function getAllKurs(){
+        if ($this->input->method() != 'get') {
+            show_404();
+            return;
+        }
+        echo json_encode($this->kursModel->getAllKurs());
+    }
 }

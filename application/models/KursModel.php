@@ -28,4 +28,23 @@ class kursModel extends CI_Model
             ];
         }
     }
+
+    public function getAllKurs()
+    {
+        $sql = "SELECT * FROM MK_MASTER_KURS";
+        $data = $this->db->query($sql);
+
+        if ($data) {
+            return [
+                'success' => true,
+                'message' => 'berhasil get kurs',
+                'data' => $data->result_array()
+            ];
+        } else {
+            return [
+                'success' => false,
+                'message' => 'Maaf ada kesalahan, mohon tunggu sebentar'
+            ];
+        }
+    }
 }
