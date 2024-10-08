@@ -54,6 +54,7 @@ $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 $route['user'] = 'User/user';
 $route['user/(:any)'] = 'User/user/$1';
+$route['getUserByUserInput/(:any)'] = 'User/getUserByUserInput/$1';
 $route['kurs'] = 'Kurs/kurs';
 $route['getAllKurs'] = 'Kurs/getAllKurs';
 $route['jenisbayar'] = 'JenisBayar/jenisBayar';
