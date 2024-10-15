@@ -223,4 +223,10 @@ class User extends CI_Controller
 			return;
 		}
 	}
+
+	public function getUserByUserInput($keyword = false)
+	{
+		$users = $this->userModel->getUserByUserInput($keyword); 
+		echo json_encode($users);
+	}
 }
