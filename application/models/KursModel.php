@@ -31,7 +31,7 @@ class kursModel extends CI_Model
 
     public function getAllKurs()
     {
-        $sql = "SELECT * FROM MK_MASTER_KURS";
+        $sql = "SELECT * FROM MK_MASTER_KURS ORDER BY TANGGAL DESC";
         $data = $this->db->query($sql);
 
         if ($data) {

@@ -96,10 +96,10 @@ class Customer extends CI_Controller
 			$sql = 'DELETE FROM MK_MASTER_CUSTOMER WHERE NO_HP = ?';
 			$this->db->query($sql, [$data['no_hp']]);
 
-			if ($error['code'] != 0) {
-				// Ada error, tangani di sini
-				throw new Exception($error['message']);
-			}
+			// if ($error['code'] != 0) {
+			// 	// Ada error, tangani di sini
+			// 	throw new Exception($error['message']);
+			// }
 			if ($this->db->affected_rows() > 0) {
 				echo json_encode(['success' => true]);
 			} else {
