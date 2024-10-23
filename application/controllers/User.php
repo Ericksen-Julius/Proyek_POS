@@ -173,6 +173,7 @@ class User extends CI_Controller
 				// Set validation rules
 				$this->form_validation->set_rules('user_id', 'user_id', 'required|integer');
 				$this->form_validation->set_rules('password', 'Password', 'required');
+				$this->form_validation->set_rules('otp', 'OTP', 'required|integer');
 				// Validate the input data
 				if ($this->form_validation->run() == FALSE) {
 					// If validation fails, return errors
@@ -193,11 +194,51 @@ class User extends CI_Controller
 				if ($user) {
 					if (password_verify($data['password'], $user['PASSWORD'])) {
 						// unset($user['PASSWORD']); // Remove password from the response
-						$user['PASSWORD'] = $data['password'];
-						echo json_encode([
-							'success' => true,
-							'user' => $user
-						]);
+						// $user['PASSWORD'] = $data['password'];
+						// echo json_encode([
+						// 	'success' => true,
+						// 	'user' => $user
+						// ]);
+
+						// date_default_timezone_set('Asia/Jakarta');
+
+						$otpSql = 'SELECT OTP, TO_CHAR(KADALUARSA, \'YYYY-MM-DD HH24:MI:SS\') AS KADALUARSA FROM MK_MASTER_USER WHERE USER_ID = ?';
+						$otpQuery = $this->db->query($otpSql, [$data['user_id']]);
+						$otpData = $otpQuery->row_array();
+
+						// Check if the OTP matches and is not expired
+						if ($otpData && $otpData['OTP'] == $data['otp']) {
+							$currentTime = date('Y-m-d H:i:s'); // Get current time
+							$otpExpireTime = new DateTime($otpData['KADALUARSA'], new DateTimeZone('Asia/Jakarta'));
+							$currentTimeObj = new DateTime($currentTime , new DateTimeZone('Asia/Jakarta'));
+
+							$formattedExpireTime = $otpExpireTime->format('Y-m-d H:i:s');
+                        	$formattedCurrentTime = $currentTimeObj->format('Y-m-d H:i:s');
+							if ($otpExpireTime > $currentTimeObj) {
+								// OTP is valid and not expired
+								$user['PASSWORD'] = $data['password']; // Optional: Mask password in response
+								echo json_encode([
+									'success' => true,
+									'user' => $user,
+									// 'currentTime' => $currentTimeObj,
+                                	// 'otpExpireTime' => $otpExpireTime
+								]);
+							} else {
+								// OTP has expired
+								echo json_encode([
+									'success' => false,
+									'message' => 'OTP has expired',
+								// 	'currentTime' => $currentTimeObj,
+                                // 'otpExpireTime' => $otpExpireTime
+								]);
+							}
+						} else {
+							// Invalid OTP
+							echo json_encode([
+								'success' => false,
+								'message' => 'Invalid OTP'
+							]);
+						}
 					} else {
 						// Invalid password
 						echo json_encode([
@@ -226,7 +267,41 @@ class User extends CI_Controller
 
 	public function getUserByUserInput($keyword = false)
 	{
-		$users = $this->userModel->getUserByUserInput($keyword); 
+		$users = $this->userModel->getUserByUserInput($keyword);
+		echo json_encode($users);
+	}
+
+	public function insertOTP()
+	{
+		// Check if the request method is POST
+		if ($this->input->method() == 'post') {
+			$json = file_get_contents('php://input');
+			$data = json_decode($json, true);
+
+			// Ensure that no_induk and otp are provided
+			if (!isset($data['no_induk']) || !isset($data['otp'])) {
+				echo json_encode([
+					'success' => false,
+					'message' => 'No_induk or OTP is missing'
+				]);
+				return;
+			}
+
+			// Get the values from the decoded JSON
+			$keyword = $data['no_induk'];
+			$otp = $data['otp'];
+
+			// Call the model to insert the OTP
+			$result = $this->userModel->insertOTP($keyword, $otp);
+			echo json_encode($result);
+		} else {
+			show_404(); // Return 404 for non-POST requests
+		}
+	}
+
+	public function getOTP($keyword = false)
+	{
+		$users = $this->userModel->getOTP($keyword);
 		echo json_encode($users);
 	}
 }
