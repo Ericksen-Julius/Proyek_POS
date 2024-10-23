@@ -200,8 +200,6 @@ class User extends CI_Controller
 						// 	'user' => $user
 						// ]);
 
-						// date_default_timezone_set('Asia/Jakarta');
-
 						$otpSql = 'SELECT OTP, TO_CHAR(KADALUARSA, \'YYYY-MM-DD HH24:MI:SS\') AS KADALUARSA FROM MK_MASTER_USER WHERE USER_ID = ?';
 						$otpQuery = $this->db->query($otpSql, [$data['user_id']]);
 						$otpData = $otpQuery->row_array();
@@ -212,11 +210,9 @@ class User extends CI_Controller
 							$otpExpireTime = new DateTime($otpData['KADALUARSA'], new DateTimeZone('Asia/Jakarta'));
 							$currentTimeObj = new DateTime($currentTime , new DateTimeZone('Asia/Jakarta'));
 
-							$formattedExpireTime = $otpExpireTime->format('Y-m-d H:i:s');
-                        	$formattedCurrentTime = $currentTimeObj->format('Y-m-d H:i:s');
 							if ($otpExpireTime > $currentTimeObj) {
 								// OTP is valid and not expired
-								$user['PASSWORD'] = $data['password']; // Optional: Mask password in response
+								$user['PASSWORD'] = $data['password']; 
 								echo json_encode([
 									'success' => true,
 									'user' => $user,
