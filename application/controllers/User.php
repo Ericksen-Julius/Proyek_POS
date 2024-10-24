@@ -58,6 +58,7 @@ class User extends CI_Controller
 			$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
 			$this->form_validation->set_rules('password', 'Password', 'required');
 			$this->form_validation->set_rules('jabatan', 'Jabatan', 'required|max_length[30]');
+			$this->form_validation->set_rules('no_hp', 'No HP', 'required|max_length[30]');
 
 			// Validate the input data
 			if ($this->form_validation->run() == FALSE) {
@@ -75,11 +76,12 @@ class User extends CI_Controller
 			$hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
 
 			// Insert the data into the database
-			$sql = 'INSERT INTO MK_MASTER_USER (NAMA, PASSWORD, JABATAN) VALUES (?, ?, ?)';
+			$sql = 'INSERT INTO MK_MASTER_USER (NAMA, PASSWORD, JABATAN,NO_HP) VALUES (?, ?, ?,?)';
 			$inserted = $this->db->query($sql, [
 				$data['nama'],
 				$hashedPassword,
-				$data['jabatan']
+				$data['jabatan'],
+				$data['no_hp']
 			]);
 
 			if ($inserted) {
@@ -126,6 +128,7 @@ class User extends CI_Controller
 			$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
 			$this->form_validation->set_rules('password', 'Password', 'required');
 			$this->form_validation->set_rules('jabatan', 'Jabatan', 'required|max_length[30]');
+			$this->form_validation->set_rules('no_hp', 'No HP', 'required|max_length[30]');
 
 			if ($this->form_validation->run() == FALSE) {
 				// Jika validasi gagal
@@ -141,11 +144,12 @@ class User extends CI_Controller
 			$hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
 
 			// Jika validasi berhasil, masukkan data ke database
-			$sql = 'UPDATE MK_MASTER_USER SET NAMA = ?, PASSWORD = ?, JABATAN = ? WHERE USER_ID = ?';
+			$sql = 'UPDATE MK_MASTER_USER SET NAMA = ?, PASSWORD = ?, JABATAN = ?, NO_HP = ? WHERE USER_ID = ?';
 			$updated = $this->db->query($sql, [
 				$data['nama'],
 				$hashedPassword,
 				$data['jabatan'],
+				$data['no_hp'],
 				(int)$id
 			]);
 
@@ -226,7 +230,7 @@ class User extends CI_Controller
 
 	public function getUserByUserInput($keyword = false)
 	{
-		$users = $this->userModel->getUserByUserInput($keyword); 
+		$users = $this->userModel->getUserByUserInput($keyword);
 		echo json_encode($users);
 	}
 }

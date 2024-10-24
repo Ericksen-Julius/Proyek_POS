@@ -37,7 +37,7 @@ class userModel extends CI_Model
     {
         $keyword = !$keyword ? '' : $keyword;
         $keyword = $this->db->escape_like_str($keyword);
-        $sql = "SELECT NAMA FROM MK_MASTER_USER WHERE LOWER(USER_ID) LIKE LOWER(?)";
+        $sql = "SELECT NAMA,NO_HP FROM MK_MASTER_USER WHERE LOWER(USER_ID) LIKE LOWER(?)";
         $data = $this->db->query($sql, [
             '%' . $keyword . '%'
         ]);
