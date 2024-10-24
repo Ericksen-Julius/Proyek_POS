@@ -58,6 +58,7 @@ class User extends CI_Controller
 			$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
 			$this->form_validation->set_rules('password', 'Password', 'required');
 			$this->form_validation->set_rules('jabatan', 'Jabatan', 'required|max_length[30]');
+			$this->form_validation->set_rules('no_hp', 'No HP', 'required|max_length[30]');
 
 			// Validate the input data
 			if ($this->form_validation->run() == FALSE) {
@@ -75,11 +76,12 @@ class User extends CI_Controller
 			$hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
 
 			// Insert the data into the database
-			$sql = 'INSERT INTO MK_MASTER_USER (NAMA, PASSWORD, JABATAN) VALUES (?, ?, ?)';
+			$sql = 'INSERT INTO MK_MASTER_USER (NAMA, PASSWORD, JABATAN,NO_HP) VALUES (?, ?, ?,?)';
 			$inserted = $this->db->query($sql, [
 				$data['nama'],
 				$hashedPassword,
-				$data['jabatan']
+				$data['jabatan'],
+				$data['no_hp']
 			]);
 
 			if ($inserted) {
@@ -126,6 +128,7 @@ class User extends CI_Controller
 			$this->form_validation->set_rules('nama', 'Nama', 'required|max_length[100]');
 			$this->form_validation->set_rules('password', 'Password', 'required');
 			$this->form_validation->set_rules('jabatan', 'Jabatan', 'required|max_length[30]');
+			$this->form_validation->set_rules('no_hp', 'No HP', 'required|max_length[30]');
 
 			if ($this->form_validation->run() == FALSE) {
 				// Jika validasi gagal
@@ -141,11 +144,12 @@ class User extends CI_Controller
 			$hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
 
 			// Jika validasi berhasil, masukkan data ke database
-			$sql = 'UPDATE MK_MASTER_USER SET NAMA = ?, PASSWORD = ?, JABATAN = ? WHERE USER_ID = ?';
+			$sql = 'UPDATE MK_MASTER_USER SET NAMA = ?, PASSWORD = ?, JABATAN = ?, NO_HP = ? WHERE USER_ID = ?';
 			$updated = $this->db->query($sql, [
 				$data['nama'],
 				$hashedPassword,
 				$data['jabatan'],
+				$data['no_hp'],
 				(int)$id
 			]);
 
@@ -173,7 +177,6 @@ class User extends CI_Controller
 				// Set validation rules
 				$this->form_validation->set_rules('user_id', 'user_id', 'required|integer');
 				$this->form_validation->set_rules('password', 'Password', 'required');
-				$this->form_validation->set_rules('otp', 'OTP', 'required|integer');
 				// Validate the input data
 				if ($this->form_validation->run() == FALSE) {
 					// If validation fails, return errors
@@ -199,49 +202,48 @@ class User extends CI_Controller
 
 				if ($user) {
 					if (password_verify($data['password'], $user['PASSWORD'])) {
-						// unset($user['PASSWORD']); // Remove password from the response
-						// $user['PASSWORD'] = $data['password'];
-						// echo json_encode([
-						// 	'success' => true,
-						// 	'user' => $user
-						// ]);
+						unset($user['PASSWORD']); // Remove password from the response
+						$user['PASSWORD'] = $data['password'];
+						echo json_encode([
+							'success' => true,
+							'user' => $user
+						]);
 
-						$otpSql = 'SELECT OTP, TO_CHAR(KADALUARSA, \'YYYY-MM-DD HH24:MI:SS\') AS KADALUARSA FROM MK_MASTER_USER WHERE USER_ID = ?';
-						$otpQuery = $this->db->query($otpSql, [$data['user_id']]);
-						$otpData = $otpQuery->row_array();
+						// $otpSql = 'SELECT OTP, TO_CHAR(KADALUARSA, \'YYYY-MM-DD HH24:MI:SS\') AS KADALUARSA FROM MK_MASTER_USER WHERE USER_ID = ?';
+						// $otpQuery = $this->db->query($otpSql, [$data['user_id']]);
+						// $otpData = $otpQuery->row_array();
 
-						// Check if the OTP matches and is not expired
-						if ($otpData && $otpData['OTP'] == $data['otp']) {
-							// $currentTime = date('Y-m-d H:i:s'); // Get current time
-							$currentTime = new DateTime('now', new DateTimeZone('Asia/Jakarta'));
-							$otpExpireTime = new DateTime($otpData['KADALUARSA'], new DateTimeZone('Asia/Jakarta'));
-							// $currentTimeObj = new DateTime($currentTime , new DateTimeZone('Asia/Jakarta'));
+						// // Check if the OTP matches and is not expired
+						// if ($otpData && $otpData['OTP'] == $data['otp']) {
+						// 	$currentTime = date('Y-m-d H:i:s'); // Get current time
+						// 	$otpExpireTime = new DateTime($otpData['KADALUARSA'], new DateTimeZone('Asia/Jakarta'));
+						// 	$currentTimeObj = new DateTime($currentTime, new DateTimeZone('Asia/Jakarta'));
 
-							if ($otpExpireTime > $currentTime) {
-								// OTP is valid and not expired
-								$user['PASSWORD'] = $data['password']; 
-								echo json_encode([
-									'success' => true,
-									'user' => $user,
-									'currentTime' => $currentTime,
-                                	'otpExpireTime' => $otpExpireTime
-								]);
-							} else {
-								// OTP has expired
-								echo json_encode([
-									'success' => false,
-									'message' => 'OTP has expired',
-									'currentTime' => $currentTime,
-                                'otpExpireTime' => $otpExpireTime
-								]);
-							}
-						} else {
-							// Invalid OTP
-							echo json_encode([
-								'success' => false,
-								'message' => 'Invalid OTP'
-							]);
-						}
+						// 	if ($otpExpireTime > $currentTimeObj) {
+						// 		// OTP is valid and not expired
+						// 		$user['PASSWORD'] = $data['password'];
+						// 		echo json_encode([
+						// 			'success' => true,
+						// 			'user' => $user,
+						// 			// 'currentTime' => $currentTimeObj,
+						// 			// 'otpExpireTime' => $otpExpireTime
+						// 		]);
+						// 	} else {
+						// 		// OTP has expired
+						// 		echo json_encode([
+						// 			'success' => false,
+						// 			'message' => 'OTP has expired',
+						// 			// 	'currentTime' => $currentTimeObj,
+						// 			// 'otpExpireTime' => $otpExpireTime
+						// 		]);
+						// 	}
+						// } else {
+						// 	// Invalid OTP
+						// 	echo json_encode([
+						// 		'success' => false,
+						// 		'message' => 'Invalid OTP'
+						// 	]);
+						// }
 					} else {
 						// Invalid password
 						echo json_encode([
@@ -270,6 +272,7 @@ class User extends CI_Controller
 
 	public function getUserByUserInput($keyword = false)
 	{
+		$users = $this->userModel->getUserByUserInput($keyword);
 		$users = $this->userModel->getUserByUserInput($keyword);
 		echo json_encode($users);
 	}
