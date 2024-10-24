@@ -59,7 +59,9 @@ class userModel extends CI_Model
     {
         $keyword = !$keyword ? '' : $keyword;
         $keyword = $this->db->escape_like_str($keyword);
-        $kadaluwarsaTime = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+        $date = new DateTime('now', new DateTimeZone('Asia/Jakarta'));  // Get current time in Jakarta timezone
+$date->modify('+5 minutes');  // Add 5 minutes
+$kadaluwarsaTime = $date->format('Y-m-d H:i:s');
         $sql = "UPDATE MK_MASTER_USER SET OTP = ?, KADALUARSA = TO_DATE('$kadaluwarsaTime', 'YYYY-MM-DD HH24:MI:SS') WHERE LOWER(USER_ID) LIKE LOWER(?)";
         $data = $this->db->query($sql, [
             $OTP, 

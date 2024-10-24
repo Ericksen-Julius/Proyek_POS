@@ -187,7 +187,13 @@ class User extends CI_Controller
 				}
 
 				// Retrieve the user from the database
-				$sql = 'SELECT * FROM MK_MASTER_USER WHERE USER_ID = ?';
+				$sql = 'SELECT USER_ID, 
+    NAMA, 
+    PASSWORD, 
+    JABATAN, 
+    NO_HP, 
+    OTP, 
+	TO_CHAR(KADALUARSA, \'YYYY-MM-DD HH24:MI:SS\') AS KADALUARSA FROM MK_MASTER_USER WHERE USER_ID = ?';
 				$query = $this->db->query($sql, [$data['user_id']]);
 				$user = $query->row_array();
 
@@ -206,26 +212,27 @@ class User extends CI_Controller
 
 						// Check if the OTP matches and is not expired
 						if ($otpData && $otpData['OTP'] == $data['otp']) {
-							$currentTime = date('Y-m-d H:i:s'); // Get current time
+							// $currentTime = date('Y-m-d H:i:s'); // Get current time
+							$currentTime = new DateTime('now', new DateTimeZone('Asia/Jakarta'));
 							$otpExpireTime = new DateTime($otpData['KADALUARSA'], new DateTimeZone('Asia/Jakarta'));
-							$currentTimeObj = new DateTime($currentTime , new DateTimeZone('Asia/Jakarta'));
+							// $currentTimeObj = new DateTime($currentTime , new DateTimeZone('Asia/Jakarta'));
 
-							if ($otpExpireTime > $currentTimeObj) {
+							if ($otpExpireTime > $currentTime) {
 								// OTP is valid and not expired
 								$user['PASSWORD'] = $data['password']; 
 								echo json_encode([
 									'success' => true,
 									'user' => $user,
-									// 'currentTime' => $currentTimeObj,
-                                	// 'otpExpireTime' => $otpExpireTime
+									'currentTime' => $currentTime,
+                                	'otpExpireTime' => $otpExpireTime
 								]);
 							} else {
 								// OTP has expired
 								echo json_encode([
 									'success' => false,
 									'message' => 'OTP has expired',
-								// 	'currentTime' => $currentTimeObj,
-                                // 'otpExpireTime' => $otpExpireTime
+									'currentTime' => $currentTime,
+                                'otpExpireTime' => $otpExpireTime
 								]);
 							}
 						} else {
