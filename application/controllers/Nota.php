@@ -69,18 +69,20 @@ class Nota extends CI_Controller
 
             // Fetch the exchange rate and date
             $kurs = $this->kursModel->getKurs();
-            $tanggal = new DateTime(); // Membuat objek DateTime dengan tanggal saat ini
-            $tanggal = $tanggal->format('d/m/Y');
+            $tanggal = new DateTime('now', new DateTimeZone('Asia/Jakarta')); 
+            $tanggal = $tanggal->format('d/m/Y H:i:s') . ',' . str_pad($tanggal->format('u'), 6, '0', STR_PAD_LEFT);
+            // $formattedTanggal = $tanggal->format('d/m/Y H:i:s') . ',' . str_pad($tanggal->format('u'), 6, '0', STR_PAD_LEFT);
             $kurs = $kurs['data'][0]['KURS'];
 
             // $notaCode = $this->generateNotaCode();
 
-            $sql = "INSERT INTO MK_NOTA_PENJUALAN_A (NO_DOK, NO_HP, TANGGAL, USER_INPUT) VALUES (?, ?, TO_DATE(?, 'DD/MM/YYYY'), ?)";
+            $sql = "INSERT INTO MK_NOTA_PENJUALAN_A (NO_DOK, NO_HP, TANGGAL, USER_INPUT, TANGGAL_SYNC) VALUES (?, ?, TO_TIMESTAMP(?, 'DD/MM/YYYY HH24:MI:SS,FF'), ?, TO_TIMESTAMP(?, 'DD/MM/YYYY HH24:MI:SS,FF'))";
             $this->db->query($sql, [
                 $data['nota_code'],
                 $data['no_hp'],
-                $tanggal,
-                $data['user_input']
+                $data['tanggal'],
+                $data['user_input'],
+                $tanggal
             ]);
 
             foreach ($data['barang'] as $barang) {
