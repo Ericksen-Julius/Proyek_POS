@@ -190,7 +190,13 @@ class User extends CI_Controller
 				}
 
 				// Retrieve the user from the database
-				$sql = 'SELECT * FROM MK_MASTER_USER WHERE USER_ID = ?';
+				$sql = 'SELECT USER_ID, 
+    NAMA, 
+    PASSWORD, 
+    JABATAN, 
+    NO_HP, 
+    OTP, 
+	TO_CHAR(KADALUARSA, \'YYYY-MM-DD HH24:MI:SS\') AS KADALUARSA FROM MK_MASTER_USER WHERE USER_ID = ?';
 				$query = $this->db->query($sql, [$data['user_id']]);
 				$user = $query->row_array();
 
